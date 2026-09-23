@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>STING — Definitions Self-Check</title>
+<style>
+  :root {
+    --navy: #2F3C7E;
+    --coral: #F96167;
+    --gold: #F9E795;
+    --bg: #FFF9F0;
+    --card-bg: #FFFFFF;
+    --text: #222222;
+    --muted: #666666;
+    --border: #E5DFD3;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1B1F33;
+      --card-bg: #262B47;
+      --text: #F1F1F1;
+      --muted: #B8BCD0;
+      --border: #3A3F5E;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1B1F33;
+    --card-bg: #262B47;
+    --text: #F1F1F1;
+    --muted: #B8BCD0;
+    --border: #3A3F5E;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100%;
+    padding: 24px 16px 48px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  header {
+    background: var(--navy);
+    color: white;
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 20px;
+  }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 1.5rem;
+    font-family: Georgia, "Times New Roman", serif;
+  }
+  header p { margin: 0; color: var(--gold); font-size: 0.95rem; }
+  .progress-bar {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--coral);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .qnum {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .prompt {
+    font-size: 1.15rem;
+    font-style: italic;
+    margin-bottom: 20px;
+    line-height: 1.45;
+  }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    text-align: left;
+    padding: 13px 16px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: inherit;
+  }
+  .option:hover:not(:disabled) { border-color: var(--navy); }
+  .option:disabled { cursor: default; }
+  .option.correct { border-color: #2E8B57; background: rgba(46,139,87,0.12); font-weight: 600; }
+  .option.incorrect { border-color: var(--coral); background: rgba(249,97,103,0.12); }
+  .explanation {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border-left: 4px solid var(--coral);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: var(--muted);
+    display: none;
+  }
+  .explanation.show { display: block; }
+  .verdict {
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .verdict.right { color: #2E8B57; }
+  .verdict.wrong { color: var(--coral); }
+  .next-btn {
+    margin-top: 18px;
+    width: 100%;
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    background: var(--navy);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+  }
+  .next-btn.show { display: block; }
+  .results {
+    text-align: center;
+    padding: 10px 0;
+  }
+  .results .score {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 10px 0;
+    font-family: Georgia, serif;
+  }
+  .results p { color: var(--muted); }
+  .restart-btn {
+    margin-top: 20px;
+    padding: 13px 28px;
+    border-radius: 10px;
+    border: none;
+    background: var(--coral);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .missed-list {
+    text-align: left;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .missed-item {
+    margin-bottom: 14px;
+    font-size: 0.92rem;
+  }
+  .missed-item .fname { font-weight: 700; color: var(--navy); }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 28px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 11px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .tab-btn.active {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: white;
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Flashcards */
+  .fc-counter {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .fc-stage {
+    perspective: 1200px;
+    margin-bottom: 18px;
+  }
+  .fc-card {
+    position: relative;
+    min-height: 220px;
+    border-radius: 14px;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+  }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+  .fc-face.back { transform: rotateY(180deg); }
+  .fc-hint {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+  }
+  .fc-term {
+    font-family: Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .fc-def {
+    font-size: 1.05rem;
+    line-height: 1.45;
+    margin-bottom: 14px;
+  }
+  .fc-example {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    width: 100%;
+  }
+  .fc-controls {
+    display: flex;
+    gap: 10px;
+  }
+  .fc-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: var(--navy);
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .fc-btn.secondary {
+    background: var(--coral);
+  }
+  .fc-btn.ghost {
+    background: transparent;
+    color: var(--navy);
+    border: 2px solid var(--border);
+  }
+  .fc-tap-hint {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>STING — All 15 Fallacies</h1>
+    <p>Study and self-check on every Quarter 1 fallacy.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tabQuizBtn" onclick="switchTab('quiz')">Quiz</button>
+    <button class="tab-btn" id="tabFlashBtn" onclick="switchTab('flash')">Flashcards</button>
+  </div>
+
+  <div class="panel active" id="quizPanel">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="card" id="quizCard"></div>
+  </div>
+
+  <div class="panel" id="flashPanel">
+    <div class="fc-counter" id="fcCounter">Card 1 of 15</div>
+    <div class="fc-tap-hint">Tap the card to flip it</div>
+    <div class="fc-stage">
+      <div class="fc-card" id="fcCard">
+        <div class="fc-face front">
+          <div class="fc-hint">Fallacy</div>
+          <div class="fc-term" id="fcTerm"></div>
+        </div>
+        <div class="fc-face back">
+          <div class="fc-hint" id="fcTermBack"></div>
+          <div class="fc-def" id="fcDef"></div>
+          <div class="fc-example" id="fcExample"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="fc-btn ghost" id="fcPrevBtn">Prev</button>
+      <button class="fc-btn secondary" id="fcShuffleBtn">Shuffle</button>
+      <button class="fc-btn" id="fcNextBtn">Next</button>
+    </div>
+  </div>
+
+  <footer>Quarter 1 · Spot It</footer>
+</div>
+
+<script>
+const QUESTIONS = [
+  { prompt: "Attacking the person instead of their argument.", options: ["Ad Hominem","Straw Man","Whataboutism","Red Herring"], correct: 0, example: "Why trust his opinion on grades? He never even studies himself." },
+  { prompt: "Misrepresenting someone's argument to make it easier to knock down.", options: ["Red Herring","Straw Man","Circular Reasoning","No True Scotsman"], correct: 1, example: "I only said we should recycle more. He acted like I wanted to ban all plastic overnight." },
+  { prompt: "Introducing an irrelevant point to distract from the actual argument.", options: ["Whataboutism","Slippery Slope","Red Herring","Straw Man"], correct: 2, example: "Asked about the budget cuts, the senator started talking about her opponent's vacation home." },
+  { prompt: "Deflecting criticism by pointing to someone else's flaw instead of addressing the actual claim.", options: ["Ad Hominem","Post Hoc","Appeal to Authority","Whataboutism"], correct: 3, example: "Asked about her own tardiness, she brought up how often her sister is late too." },
+  { prompt: "Using \u201can expert/celebrity says so\u201d as proof, regardless of relevance or actual expertise.", options: ["Appeal to Authority","Bandwagon","No True Scotsman","Hasty Generalization"], correct: 0, example: "My favorite YouTuber said this diet works, so it must be true." },
+  { prompt: "Using fear, anger, or pity to win the argument instead of evidence.", options: ["False Dilemma","Appeal to Emotion","Equivocation","Straw Man"], correct: 1, example: "If you really loved me, you'd let me borrow the car tonight." },
+  { prompt: "\u201cEveryone believes this, so it must be true.\u201d", options: ["Appeal to Authority","Circular Reasoning","Bandwagon","Red Herring"], correct: 2, example: "Everyone's buying these shoes, so they must be worth it." },
+  { prompt: "Claiming something must be true because it hasn't been proven false \u2014 or vice versa.", options: ["Post Hoc","Slippery Slope","Whataboutism","Appeal to Ignorance"], correct: 3, example: "No one's proven ghosts are fake, so they must be real." },
+  { prompt: "Drawing a broad conclusion from a tiny or unrepresentative sample.", options: ["Hasty Generalization","Post Hoc","No True Scotsman","Ad Hominem"], correct: 0, example: "I met two kids from that school and they were both rude, so everyone there must be rude." },
+  { prompt: "Assuming that because event B followed event A, A must have caused B.", options: ["Hasty Generalization","Post Hoc","Slippery Slope","Circular Reasoning"], correct: 1, example: "The team lost the week they got new jerseys, so the jerseys must be cursed." },
+  { prompt: "Claiming one small step will inevitably lead to an extreme outcome, without showing why.", options: ["False Dilemma","Appeal to Ignorance","Slippery Slope","Straw Man"], correct: 2, example: "Let students redo one quiz, and pretty soon nobody will study for anything." },
+  { prompt: "The conclusion is just the premise restated in different words.", options: ["Equivocation","Bandwagon","Appeal to Emotion","Circular Reasoning"], correct: 3, example: "She's trustworthy because she's simply an honest person." },
+  { prompt: "Using a word in two different senses within the same argument to make it seem logical.", options: ["Equivocation","Circular Reasoning","No True Scotsman","Red Herring"], correct: 0, example: "The company calls its cleaning product 'natural.' Arsenic is natural too, so that alone doesn't tell you it's safe to use." },
+  { prompt: "Presenting only two options when more actually exist.", options: ["Slippery Slope","False Dilemma","Whataboutism","Appeal to Authority"], correct: 1, example: "Either you're on my side in this argument, or you're against me completely." },
+  { prompt: "Redefining a category to dodge a counterexample (\u201cno real fan would\u2026\u201d).", options: ["Equivocation","Hasty Generalization","No True Scotsman","Bandwagon"], correct: 2, example: "No real gamer would ever prefer mobile games over console games." }
+];
+
+let current = 0;
+let score = 0;
+let missed = [];
+let answered = false;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Shuffle option order per question at load time, tracking the new correct index
+const shuffledQuestions = QUESTIONS.map(q => {
+  const indices = shuffle([0, 1, 2, 3]);
+  const options = indices.map(i => q.options[i]);
+  const correct = indices.indexOf(q.correct);
+  return { prompt: q.prompt, options, correct, example: q.example };
+});
+
+function render() {
+  const card = document.getElementById('quizCard');
+  const fill = document.getElementById('progressFill');
+
+  if (current >= shuffledQuestions.length) {
+    fill.style.width = '100%';
+    renderResults(card);
+    return;
+  }
+
+  fill.style.width = (current / shuffledQuestions.length * 100) + '%';
+  answered = false;
+  const q = shuffledQuestions[current];
+
+  card.innerHTML = `
+    <div class="qnum">Question ${current + 1} of ${shuffledQuestions.length}</div>
+    <div class="prompt">${q.prompt}</div>
+    <div class="options" id="optionsWrap"></div>
+    <div class="explanation" id="explanationBox">
+      <div class="verdict" id="verdictText"></div>
+      <div>Example: "${q.example}"</div>
+    </div>
+    <button class="next-btn" id="nextBtn">Next</button>
+  `;
+
+  const optionsWrap = document.getElementById('optionsWrap');
+  q.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(idx);
+    optionsWrap.appendChild(btn);
+  });
+
+  document.getElementById('nextBtn').onclick = () => {
+    current++;
+    render();
+  };
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = shuffledQuestions[current];
+  const buttons = document.querySelectorAll('.option');
+  const correct = idx === q.correct;
+
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === idx) btn.classList.add('incorrect');
+  });
+
+  const verdict = document.getElementById('verdictText');
+  const explanationBox = document.getElementById('explanationBox');
+  if (correct) {
+    score++;
+    verdict.textContent = "That's right!";
+    verdict.className = 'verdict right';
+  } else {
+    missed.push({ prompt: q.prompt, correctAnswer: q.options[q.correct], example: q.example });
+    verdict.textContent = 'Not quite.';
+    verdict.className = 'verdict wrong';
+  }
+  explanationBox.classList.add('show');
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function renderResults(card) {
+  const total = shuffledQuestions.length;
+  const pct = Math.round((score / total) * 100);
+  let missedHtml = '';
+  if (missed.length > 0) {
+    missedHtml = `
+      <div class="missed-list">
+        <strong>Review these:</strong>
+        ${missed.map(m => `
+          <div class="missed-item">
+            <div>${m.prompt}</div>
+            <div><span class="fname">${m.correctAnswer}</span> — "${m.example}"</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+  card.innerHTML = `
+    <div class="results">
+      <div class="qnum">Complete</div>
+      <div class="score">${score}/${total}</div>
+      <p>${pct}% correct</p>
+      <button class="restart-btn" id="restartBtn">Try Again</button>
+      ${missedHtml}
+    </div>
+  `;
+  document.getElementById('restartBtn').onclick = () => {
+    current = 0;
+    score = 0;
+    missed = [];
+    render();
+  };
+}
+
+render();
+
+// ---------- Flashcards ----------
+const FLASHCARDS = QUESTIONS.map(q => ({
+  term: q.options[q.correct],
+  def: q.prompt,
+  example: q.example
+}));
+
+let fcOrder = FLASHCARDS.map((_, i) => i);
+let fcIndex = 0;
+let fcFlipped = false;
+
+function renderFlashcard() {
+  const cardData = FLASHCARDS[fcOrder[fcIndex]];
+  document.getElementById('fcCounter').textContent = `Card ${fcIndex + 1} of ${FLASHCARDS.length}`;
+  document.getElementById('fcTerm').textContent = cardData.term;
+  document.getElementById('fcTermBack').textContent = cardData.term;
+  document.getElementById('fcDef').textContent = cardData.def;
+  document.getElementById('fcExample').textContent = `"${cardData.example}"`;
+  const cardEl = document.getElementById('fcCard');
+  cardEl.classList.remove('flipped');
+  fcFlipped = false;
+}
+
+document.getElementById('fcCard').addEventListener('click', () => {
+  fcFlipped = !fcFlipped;
+  document.getElementById('fcCard').classList.toggle('flipped', fcFlipped);
+});
+
+document.getElementById('fcNextBtn').addEventListener('click', () => {
+  fcIndex = (fcIndex + 1) % FLASHCARDS.length;
+  renderFlashcard();
+});
+
+document.getElementById('fcPrevBtn').addEventListener('click', () => {
+  fcIndex = (fcIndex - 1 + FLASHCARDS.length) % FLASHCARDS.length;
+  renderFlashcard();
+});
+
+document.getElementById('fcShuffleBtn').addEventListener('click', () => {
+  fcOrder = shuffle(fcOrder);
+  fcIndex = 0;
+  renderFlashcard();
+});
+
+renderFlashcard();
+
+// ---------- Tabs ----------
+function switchTab(tab) {
+  const quizBtn = document.getElementById('tabQuizBtn');
+  const flashBtn = document.getElementById('tabFlashBtn');
+  const quizPanel = document.getElementById('quizPanel');
+  const flashPanel = document.getElementById('flashPanel');
+
+  if (tab === 'quiz') {
+    quizBtn.classList.add('active');
+    flashBtn.classList.remove('active');
+    quizPanel.classList.add('active');
+    flashPanel.classList.remove('active');
+  } else {
+    flashBtn.classList.add('active');
+    quizBtn.classList.remove('active');
+    flashPanel.classList.add('active');
+    quizPanel.classList.remove('active');
+  }
+}
+</script>
+</body>
+</html>

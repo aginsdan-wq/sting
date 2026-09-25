@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>STING — Fallacies in Real Life</title>
+<style>
+  :root {
+    --navy: #2F3C7E;
+    --coral: #F96167;
+    --gold: #F9E795;
+    --bg: #FFF9F0;
+    --card-bg: #FFFFFF;
+    --text: #222222;
+    --muted: #666666;
+    --border: #E5DFD3;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1B1F33;
+      --card-bg: #262B47;
+      --text: #F1F1F1;
+      --muted: #B8BCD0;
+      --border: #3A3F5E;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1B1F33;
+    --card-bg: #262B47;
+    --text: #F1F1F1;
+    --muted: #B8BCD0;
+    --border: #3A3F5E;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100%;
+    padding: 24px 16px 48px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  header {
+    background: var(--navy);
+    color: white;
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 20px;
+  }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 1.4rem;
+    font-family: Georgia, "Times New Roman", serif;
+  }
+  header p { margin: 0; color: var(--gold); font-size: 0.95rem; }
+  .progress-bar {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--coral);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .qnum {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .prompt {
+    font-size: 1.08rem;
+    margin-bottom: 20px;
+    line-height: 1.55;
+    white-space: pre-line;
+  }
+  .prompt .speaker { font-weight: 700; color: var(--navy); }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    text-align: left;
+    padding: 13px 16px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: inherit;
+  }
+  .option:hover:not(:disabled) { border-color: var(--navy); }
+  .option:disabled { cursor: default; }
+  .option.correct { border-color: #2E8B57; background: rgba(46,139,87,0.12); font-weight: 600; }
+  .option.incorrect { border-color: var(--coral); background: rgba(249,97,103,0.12); }
+  .explanation {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border-left: 4px solid var(--coral);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: var(--muted);
+    display: none;
+  }
+  .explanation.show { display: block; }
+  .verdict {
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .verdict.right { color: #2E8B57; }
+  .verdict.wrong { color: var(--coral); }
+  .next-btn {
+    margin-top: 18px;
+    width: 100%;
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    background: var(--navy);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+  }
+  .next-btn.show { display: block; }
+  .results {
+    text-align: center;
+    padding: 10px 0;
+  }
+  .results .score {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 10px 0;
+    font-family: Georgia, serif;
+  }
+  .results p { color: var(--muted); }
+  .restart-btn {
+    margin-top: 20px;
+    padding: 13px 28px;
+    border-radius: 10px;
+    border: none;
+    background: var(--coral);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .missed-list {
+    text-align: left;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .missed-item {
+    margin-bottom: 14px;
+    font-size: 0.92rem;
+  }
+  .missed-item .fname { font-weight: 700; color: var(--navy); }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 28px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>STING — Fallacies in Real Life</h1>
+    <p>Peer conversations, political speech, and parent-teen arguments. 15 questions.</p>
+  </header>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="card" id="quizCard"></div>
+  <footer>Quarter 1 · Spot It</footer>
+</div>
+
+<script>
+const QUESTIONS = [
+  { prompt: "Jake: \u201cI think we should push for a longer lunch period \u2014 twenty minutes really isn't enough time to eat.\u201d\nTyler: \u201cWhy would anyone listen to your opinion on scheduling? You're late to first period practically every day.\u201d", options: ["Ad Hominem","Straw Man","Red Herring","Bandwagon"], correct: 0, explanation: "Tyler never addresses the lunch-period idea itself \u2014 he attacks Jake's punctuality instead." },
+  { prompt: "A reporter asks Senator Cole about missing twelve votes this session.\nSenator Cole: \u201cBefore we talk about my record, let's talk about how many votes my opponent has missed over her entire career.\u201d", options: ["Red Herring","Whataboutism","Ad Hominem","Appeal to Authority"], correct: 1, explanation: "Cole deflects the criticism onto someone else's flaw instead of answering for his own missed votes." },
+  { prompt: "Mom: \u201cYou were an hour late getting home last night. What happened?\u201d\nJake: \u201cDid you know Mrs. Carter down the street just bought a brand new car? It's honestly kind of unfair how much some people have.\u201d", options: ["Whataboutism","Appeal to Emotion","Red Herring","Equivocation"], correct: 2, explanation: "Jake introduces a completely unrelated topic to steer the conversation away from his curfew." },
+  { prompt: "Chloe: \u201cI just think we should split the slides evenly so nobody ends up doing more work than everyone else.\u201d\nNoah: \u201cSo basically you're saying you don't want to do any of the research? Great, thanks for caring about this project.\u201d", options: ["Straw Man","Ad Hominem","Hasty Generalization","Circular Reasoning"], correct: 0, explanation: "Noah exaggerates Chloe's actual, reasonable request into something far more extreme and easier to object to." },
+  { prompt: "Political commentator: \u201cA well-known economist posted his support for this tax plan online, so you can be confident it's going to work.\u201d", options: ["Bandwagon","Appeal to Authority","Slippery Slope","Appeal to Ignorance"], correct: 1, explanation: "One person's credentials are treated as proof the plan works, without any actual evidence about the plan itself." },
+  { prompt: "Chloe: \u201cIf you really trusted me, you'd let me stay out past ten. Honestly, it kind of feels like you think I can't handle myself at all.\u201d", options: ["Appeal to Emotion","Equivocation","Straw Man","No True Scotsman"], correct: 0, explanation: "Chloe frames the curfew as a question of trust and hurt feelings instead of making an actual case for why ten is too early." },
+  { prompt: "Sophia: \u201cEveryone in our grade switched to using StudyFlow before finals, so it has to be the best app out there.\u201d", options: ["Appeal to Authority","Hasty Generalization","Bandwagon","Post Hoc"], correct: 2, explanation: "Popularity is treated as proof of quality \u2014 lots of people using it doesn't actually mean it's the best." },
+  { prompt: "Governor Reyes, opposing a new city ordinance: \u201cIf we let the city regulate one type of business today, before long they'll be regulating every business in this state.\u201d", options: ["Slippery Slope","False Dilemma","Whataboutism","Red Herring"], correct: 0, explanation: "One narrow regulation is treated as the first domino toward an extreme outcome, with no explanation for why that chain reaction would happen." },
+  { prompt: "Ethan: \u201cYou can't actually prove that skipping my chores this one time is going to cause any real problems, so it should be fine.\u201d", options: ["Circular Reasoning","Appeal to Ignorance","Equivocation","Post Hoc"], correct: 1, explanation: "The absence of proof that something is harmful is treated as proof that it's fine \u2014 that's not how evidence works." },
+  { prompt: "Mason: \u201cMy friend had Coach Reilly for one class and said he was really strict. Every coach at this school must run practice like a drill sergeant.\u201d", options: ["Hasty Generalization","Bandwagon","Ad Hominem","No True Scotsman"], correct: 0, explanation: "One coach, reported secondhand, gets stretched into a claim about every coach at the school." },
+  { prompt: "Political commentator, defending a new law: \u201cThis law is fair because it treats every single case in a fair and just way.\u201d", options: ["Equivocation","Appeal to Authority","Circular Reasoning","Slippery Slope"], correct: 2, explanation: "\u201cFair\u201d is used to prove \u201cfair\u201d \u2014 the claim just restates itself instead of offering actual support." },
+  { prompt: "Dad: \u201cEver since you started playing that new game, your grades have dropped. The game has to be the reason.\u201d", options: ["Post Hoc","Hasty Generalization","Slippery Slope","Circular Reasoning"], correct: 0, explanation: "The game came before the grade drop, but that timing alone doesn't prove it caused it \u2014 other things changed too." },
+  { prompt: "Ava: \u201cI can't believe you skipped the concert for a test. No real fan of the band would ever miss a show like that.\u201d", options: ["Hasty Generalization","No True Scotsman","Straw Man","Appeal to Emotion"], correct: 1, explanation: "Ava redefines \u201creal fan\u201d on the spot to exclude her friend, rather than accepting the counterexample." },
+  { prompt: "Candidate Foster, at a rally: \u201cYou're either voting for this bill, or you're voting to let the entire system collapse.\u201d", options: ["Slippery Slope","Whataboutism","False Dilemma","Appeal to Authority"], correct: 2, explanation: "Foster presents only two extreme outcomes, hiding all the other realistic positions in between." },
+  { prompt: "Mom: \u201cYou need to be more responsible with your phone \u2014 I don't want you glued to it all night.\u201d\nEthan: \u201cI am being responsible. I paid my whole phone bill myself this month.\u201d", options: ["Equivocation","Red Herring","Appeal to Ignorance","Circular Reasoning"], correct: 0, explanation: "Mom means \u201cresponsible\u201d as in self-control over screen time; Ethan quietly swaps in \u201cresponsible\u201d as in paying a bill \u2014 same word, different meaning." }
+];
+
+let current = 0;
+let score = 0;
+let missed = [];
+let answered = false;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const shuffledQuestions = QUESTIONS.map(q => {
+  const indices = shuffle([0, 1, 2, 3]);
+  const options = indices.map(i => q.options[i]);
+  const correct = indices.indexOf(q.correct);
+  return { prompt: q.prompt, options, correct, explanation: q.explanation };
+});
+
+function render() {
+  const card = document.getElementById('quizCard');
+  const fill = document.getElementById('progressFill');
+
+  if (current >= shuffledQuestions.length) {
+    fill.style.width = '100%';
+    renderResults(card);
+    return;
+  }
+
+  fill.style.width = (current / shuffledQuestions.length * 100) + '%';
+  answered = false;
+  const q = shuffledQuestions[current];
+
+  card.innerHTML = `
+    <div class="qnum">Question ${current + 1} of ${shuffledQuestions.length}</div>
+    <div class="prompt">${escapeHtml(q.prompt)}</div>
+    <div class="options" id="optionsWrap"></div>
+    <div class="explanation" id="explanationBox">
+      <div class="verdict" id="verdictText"></div>
+      <div id="explanationText"></div>
+    </div>
+    <button class="next-btn" id="nextBtn">Next</button>
+  `;
+
+  const optionsWrap = document.getElementById('optionsWrap');
+  q.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(idx);
+    optionsWrap.appendChild(btn);
+  });
+
+  document.getElementById('nextBtn').onclick = () => {
+    current++;
+    render();
+  };
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = shuffledQuestions[current];
+  const buttons = document.querySelectorAll('.option');
+  const correct = idx === q.correct;
+
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === idx) btn.classList.add('incorrect');
+  });
+
+  const verdict = document.getElementById('verdictText');
+  const explanationBox = document.getElementById('explanationBox');
+  document.getElementById('explanationText').textContent = q.explanation;
+  if (correct) {
+    score++;
+    verdict.textContent = "That's right!";
+    verdict.className = 'verdict right';
+  } else {
+    missed.push({ prompt: q.prompt, correctAnswer: q.options[q.correct], explanation: q.explanation });
+    verdict.textContent = 'Not quite.';
+    verdict.className = 'verdict wrong';
+  }
+  explanationBox.classList.add('show');
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function renderResults(card) {
+  const total = shuffledQuestions.length;
+  const pct = Math.round((score / total) * 100);
+  let missedHtml = '';
+  if (missed.length > 0) {
+    missedHtml = `
+      <div class="missed-list">
+        <strong>Review these:</strong>
+        ${missed.map(m => `
+          <div class="missed-item">
+            <div>${escapeHtml(m.prompt).replace(/\n/g, '<br>')}</div>
+            <div><span class="fname">${escapeHtml(m.correctAnswer)}</span> \u2014 ${escapeHtml(m.explanation)}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+  card.innerHTML = `
+    <div class="results">
+      <div class="qnum">Complete</div>
+      <div class="score">${score}/${total}</div>
+      <p>${pct}% correct</p>
+      <button class="restart-btn" id="restartBtn">Try Again</button>
+      ${missedHtml}
+    </div>
+  `;
+  document.getElementById('restartBtn').onclick = () => {
+    current = 0;
+    score = 0;
+    missed = [];
+    render();
+  };
+}
+
+render();
+</script>
+</body>
+</html>
